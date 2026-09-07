@@ -1,0 +1,21 @@
+# Mengabaikan folder dependensi
+node_modules/
+vendor/
+
+# Mengabaikan file lingkungan dan konfigurasi rahasia
+.env
+.env.local
+config.json
+
+# Mengabaikan file log
+*.log
+logs/
+
+# Mengabaikan file sistem operasi
+.DS_Store
+Thumbs.db
+
+# Mengabaikan folder build atau hasil kompilasi
+dist/
+build/
+bin/
