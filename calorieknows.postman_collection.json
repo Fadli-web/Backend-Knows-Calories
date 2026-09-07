@@ -1,0 +1,479 @@
+{
+  "info": {
+    "_postman_id": "c1f7a29b-8e3b-47e2-a0c5-5d989f6b4d32",
+    "name": "CalorieKnows Backend API",
+    "description": "Koleksi API lengkap untuk CalorieKnows: Autentikasi Google via Supabase, Google Fit API, Gemini Vision Snap & Log, Nutrition Label Scanner, Smart Meal Recommender, Burn It Off Converter, dan Weekly Report PDF Export.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "YOUR_SUPABASE_JWT_ACCESS_TOKEN",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "0. System & Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/health",
+              "host": ["{{base_url}}"],
+              "path": ["api", "health"]
+            },
+            "description": "Memeriksa status hidup server backend dan environment."
+          }
+        },
+        {
+          "name": "API Root Directory",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            },
+            "description": "Menampilkan daftar seluruh endpoint API yang tersedia."
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Authentication & Profile",
+      "item": [
+        {
+          "name": "Register with Email & Password",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"Budi Santoso\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Mendaftar akun baru menggunakan email dan kata sandi."
+          }
+        },
+        {
+          "name": "Login with Email & Password",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Masuk menggunakan email dan kata sandi terdaftar."
+          }
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "profile"]
+            },
+            "description": "Mengambil data profil pengguna beserta status koneksi Google Fit."
+          }
+        },
+        {
+          "name": "Update User Profile & Targets",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Budi Santoso\",\n  \"gender\": \"male\",\n  \"age\": 24,\n  \"height_cm\": 175,\n  \"weight_kg\": 70,\n  \"activity_level\": \"moderately_active\",\n  \"daily_calorie_target\": 2100,\n  \"target_protein_g\": 140,\n  \"target_carbs_g\": 220,\n  \"target_fat_g\": 60\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "profile"]
+            },
+            "description": "Memperbarui target kalori harian dan makronutrisi pengguna."
+          }
+        },
+        {
+          "name": "Save Google OAuth Tokens (Google Fit Link)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"access_token\": \"ya29.a0AfH6SM...\",\n  \"refresh_token\": \"1//0g...\",\n  \"expiry_date\": 1788749000000,\n  \"scope\": \"https://www.googleapis.com/auth/fitness.activity.read https://www.googleapis.com/auth/fitness.activity.write https://www.googleapis.com/auth/fitness.nutrition.read https://www.googleapis.com/auth/fitness.nutrition.write\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/google-token",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "google-token"]
+            },
+            "description": "Menyimpan atau memperbarui token akses Google untuk sinkronisasi Google Fit."
+          }
+        },
+        {
+          "name": "Check Google Fit Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/google-status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "google-status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Dashboard & Progress Rings",
+      "item": [
+        {
+          "name": "Get Daily Dashboard Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/summary",
+              "host": ["{{base_url}}"],
+              "path": ["api", "dashboard", "summary"]
+            },
+            "description": "Mengambil ringkasan cincin progres harian: kalori masuk vs target vs kalori terbakar Google Fit, langkah, serta pembagian waktu makan."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Scanner (Snap & Log, Label & Meal Logging)",
+      "item": [
+        {
+          "name": "Snap & Log (Food Photo Scanner) - Multipart Form Data",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": ""
+                },
+                {
+                  "key": "context_hint",
+                  "value": "Dada ayam tanpa kulit, menggunakan minyak zaitun sedikit, es teh tawar",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/scanner/food",
+              "host": ["{{base_url}}"],
+              "path": ["api", "scanner", "food"]
+            },
+            "description": "Memindai foto hidangan dengan model Gemini Vision disertai catatan opsional pengguna (Context Hint)."
+          }
+        },
+        {
+          "name": "Snap & Log (Food Photo Scanner) - Base64 JSON",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"image_base64\": \"/9j/4AAQSkZJRgABAQEASABIAAD...\",\n  \"mime_type\": \"image/jpeg\",\n  \"context_hint\": \"Dada ayam tanpa kulit bakar, nasi putih 1 centong\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/scanner/food",
+              "host": ["{{base_url}}"],
+              "path": ["api", "scanner", "food"]
+            }
+          }
+        },
+        {
+          "name": "Nutrition Label Scanner - Multipart Form Data",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": ""
+                },
+                {
+                  "key": "context_hint",
+                  "value": "Kemasan minuman biskuit gandum",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/scanner/label",
+              "host": ["{{base_url}}"],
+              "path": ["api", "scanner", "label"]
+            },
+            "description": "Mengekstrak informasi nilai gizi (takaran saji, gula, natrium, kalori) dari foto kemasan produk."
+          }
+        },
+        {
+          "name": "Log Verified Meal to Database & Google Fit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"meal_type\": \"lunch\",\n  \"food_name\": \"Nasi Ayam Bakar & Sayur Lalap\",\n  \"total_calories\": 580,\n  \"protein_g\": 38.5,\n  \"carbs_g\": 62.0,\n  \"fat_g\": 18.2,\n  \"fiber_g\": 5.4,\n  \"sugar_g\": 6.1,\n  \"sodium_mg\": 620,\n  \"context_hint\": \"Dada ayam tanpa kulit, es teh tawar\",\n  \"items\": [\n    {\n      \"item_name\": \"Dada Ayam Bakar\",\n      \"portion_estimate_grams\": 150,\n      \"calories\": 240,\n      \"protein_g\": 31.0,\n      \"carbs_g\": 4.0,\n      \"fat_g\": 5.0\n    },\n    {\n      \"item_name\": \"Nasi Putih\",\n      \"portion_estimate_grams\": 150,\n      \"calories\": 195,\n      \"protein_g\": 3.5,\n      \"carbs_g\": 43.0,\n      \"fat_g\": 0.5\n    }\n  ],\n  \"sync_google_fit\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/scanner/log-meal",
+              "host": ["{{base_url}}"],
+              "path": ["api", "scanner", "log-meal"]
+            },
+            "description": "Menyimpan data hidangan yang telah diverifikasi ke basis data Supabase dan otomatis mengirim ke Google Fit."
+          }
+        },
+        {
+          "name": "Get Meal History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/scanner/meals?limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "scanner", "meals"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "date",
+                  "value": "2026-09-07",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Meal Log",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/scanner/meals/:id",
+              "host": ["{{base_url}}"],
+              "path": ["api", "scanner", "meals", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "MEAL_LOG_UUID"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Google Fit Integration",
+      "item": [
+        {
+          "name": "Get Live Daily Activity (Steps & Burned Calories)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/google-fit/daily-summary",
+              "host": ["{{base_url}}"],
+              "path": ["api", "google-fit", "daily-summary"]
+            },
+            "description": "Membaca jumlah langkah harian, jarak tempuh, dan kalori aktif terbakar langsung dari Google Fit API."
+          }
+        },
+        {
+          "name": "Sync Specific Meal to Google Fit",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"meal_id\": \"MEAL_LOG_UUID\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/google-fit/sync-meal",
+              "host": ["{{base_url}}"],
+              "path": ["api", "google-fit", "sync-meal"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Smart Meal Recommender",
+      "item": [
+        {
+          "name": "Get Daily Closing Meal Recommendations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/recommendations/daily-closing?meal_type=dinner&preference=kuliner lokal nusantara rendah minyak",
+              "host": ["{{base_url}}"],
+              "path": ["api", "recommendations", "daily-closing"],
+              "query": [
+                {
+                  "key": "meal_type",
+                  "value": "dinner"
+                },
+                {
+                  "key": "preference",
+                  "value": "kuliner lokal nusantara rendah minyak"
+                }
+              ]
+            },
+            "description": "Membandingkan asupan makanan hari ini dengan kalori terbakar Google Fit, lalu Gemini AI memberikan 3 opsi hidangan lokal yang presisi untuk menutup sisa target harian."
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Burn It Off Converter",
+      "item": [
+        {
+          "name": "Convert Meal Calories to Physical Activities",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"calories\": 580,\n  \"weight_kg\": 70\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/converter/burn-it-off",
+              "host": ["{{base_url}}"],
+              "path": ["api", "converter", "burn-it-off"]
+            },
+            "description": "Mengonversi kalori makanan menjadi durasi kegiatan fisik riil (jalan, lari, sepeda, skipping, renang) dan membandingkan progresnya dengan aktivitas Google Fit hari ini."
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Reports & PDF Export",
+      "item": [
+        {
+          "name": "Get Weekly Report Summary (JSON)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reports/weekly?refresh=false",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reports", "weekly"],
+              "query": [
+                {
+                  "key": "refresh",
+                  "value": "false"
+                }
+              ]
+            },
+            "description": "Mengambil data agregasi konsumsi dan aktivitas 7 hari beserta evaluasi pola makan klinis dari Gemini AI."
+          }
+        },
+        {
+          "name": "Download Weekly Report (PDF)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reports/weekly/pdf",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reports", "weekly", "pdf"]
+            },
+            "description": "Mengunduh file PDF Laporan Mingguan resmi dan profesional yang digenerate langsung oleh backend."
+          }
+        }
+      ]
+    }
+  ]
+}

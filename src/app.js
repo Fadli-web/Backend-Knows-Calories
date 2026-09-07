@@ -45,6 +45,8 @@ app.get('/', (req, res) => {
     endpoints: {
       health: 'GET /api/health',
       auth_profile: {
+        register: 'POST /api/auth/register (email, password, name)',
+        login: 'POST /api/auth/login (email, password)',
         profile: 'GET /api/auth/profile',
         update_profile: 'PUT /api/auth/profile',
         save_google_token: 'POST /api/auth/google-token',

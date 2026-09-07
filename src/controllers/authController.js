@@ -1,4 +1,88 @@
+import { supabase } from '../config/supabase.js';
 import { getUserGoogleTokens, saveUserGoogleTokens } from '../services/googleFitService.js';
+
+/**
+ * Register with Email and Password
+ */
+export const registerWithEmail = async (req, res, next) => {
+  try {
+    const { email, password, name } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email dan kata sandi wajib diisi.'
+      });
+    }
+
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        data: {
+          full_name: name?.trim() || email.trim().split('@')[0]
+        }
+      }
+    });
+
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        error: error.name,
+        message: error.message
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Registrasi berhasil',
+      data: {
+        user: data.user,
+        session: data.session
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Login with Email and Password
+ */
+export const loginWithEmail = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email dan kata sandi wajib diisi.'
+      });
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password
+    });
+
+    if (error) {
+      return res.status(401).json({
+        success: false,
+        error: error.name,
+        message: error.message
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Login berhasil',
+      data: {
+        user: data.user,
+        session: data.session
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 /**
  * Get authenticated user profile

@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { requireAuth } from '../middleware/auth.js';
 import {
+  registerWithEmail,
+  loginWithEmail,
   getProfile,
   updateProfile,
   saveGoogleToken,
@@ -9,12 +11,14 @@ import {
 
 const router = Router();
 
-// All auth/profile routes require authentication
-router.use(requireAuth);
+// Public Authentication Endpoints (Email & Password)
+router.post('/register', registerWithEmail);
+router.post('/login', loginWithEmail);
 
-router.get('/profile', getProfile);
-router.put('/profile', updateProfile);
-router.post('/google-token', saveGoogleToken);
-router.get('/google-status', getGoogleFitStatus);
+// Protected Endpoints (Require Supabase JWT Bearer token)
+router.get('/profile', requireAuth, getProfile);
+router.put('/profile', requireAuth, updateProfile);
+router.post('/google-token', requireAuth, saveGoogleToken);
+router.get('/google-status', requireAuth, getGoogleFitStatus);
 
 export default router;
