@@ -5,6 +5,9 @@ const getModel = (modelName = 'gemini-1.5-flash', jsonMode = true) => {
   if (!env.GEMINI_API_KEY) {
     throw new Error('GEMINI_API_KEY is not configured in environment variables.');
   }
+  if (env.GEMINI_API_KEY.startsWith('AQ.')) {
+    throw new Error('GEMINI_API_KEY tidak valid: Key berawalan "AQ.", yang bukan Google AI Studio API Key. Harap buat API Key baru di https://aistudio.google.com/app/apikey (kunci resmi berawalan "AIzaSy...").');
+  }
 
   const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
   return genAI.getGenerativeModel({
