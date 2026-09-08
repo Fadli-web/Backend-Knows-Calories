@@ -1,19 +1,31 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { env } from '../config/env.js';
 
-const getModel = (modelName = 'gemini-1.5-flash', jsonMode = true) => {
+const CANDIDATE_MODELS = ['gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-flash-latest'];
+
+const generateContentWithFallback = async (parts, jsonMode = true) => {
   if (!env.GEMINI_API_KEY) {
     throw new Error('GEMINI_API_KEY is not configured in environment variables.');
   }
-  if (env.GEMINI_API_KEY.startsWith('AQ.')) {
-    throw new Error('GEMINI_API_KEY tidak valid: Key berawalan "AQ.", yang bukan Google AI Studio API Key. Harap buat API Key baru di https://aistudio.google.com/app/apikey (kunci resmi berawalan "AIzaSy...").');
-  }
 
   const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
-  return genAI.getGenerativeModel({
-    model: modelName,
-    generationConfig: jsonMode ? { responseMimeType: 'application/json' } : {}
-  });
+  let lastError = null;
+
+  for (const modelName of CANDIDATE_MODELS) {
+    try {
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        generationConfig: jsonMode ? { responseMimeType: 'application/json' } : {}
+      });
+      const result = await model.generateContent(parts);
+      return result.response.text();
+    } catch (err) {
+      lastError = err;
+      console.warn(`[Gemini] Model ${modelName} failed, trying fallback candidate:`, err.message);
+    }
+  }
+
+  throw lastError || new Error('All Gemini model candidates failed');
 };
 
 /**
@@ -33,8 +45,6 @@ export const fileToGenerativePart = (buffer, mimeType) => {
  * Dissects food items, estimates portion size in grams, and computes calories + macros.
  */
 export const analyzeFoodImage = async ({ imageBuffer, mimeType, contextHint = '' }) => {
-  const model = getModel('gemini-1.5-flash', true);
-
   const prompt = `
 You are an expert clinical dietitian and computer vision nutritionist for the CalorieKnows application.
 Analyze the provided food dish image thoroughly.
@@ -93,8 +103,7 @@ Return strictly valid JSON matching this structure:
 `;
 
   const imagePart = fileToGenerativePart(imageBuffer, mimeType);
-  const result = await model.generateContent([prompt, imagePart]);
-  const responseText = result.response.text();
+  const responseText = await generateContentWithFallback([prompt, imagePart], true);
 
   try {
     return JSON.parse(responseText);
@@ -109,8 +118,6 @@ Return strictly valid JSON matching this structure:
  * Extracts nutritional facts directly from packaged food/beverage labels.
  */
 export const analyzeNutritionLabel = async ({ imageBuffer, mimeType, contextHint = '' }) => {
-  const model = getModel('gemini-1.5-flash', true);
-
   const prompt = `
 You are an expert food packaging analyst for the CalorieKnows application.
 Extract all nutritional information accurately from the provided nutrition facts label (Informasi Nilai Gizi).
@@ -173,8 +180,7 @@ Return strictly valid JSON matching this structure:
 `;
 
   const imagePart = fileToGenerativePart(imageBuffer, mimeType);
-  const result = await model.generateContent([prompt, imagePart]);
-  const responseText = result.response.text();
+  const responseText = await generateContentWithFallback([prompt, imagePart], true);
 
   try {
     return JSON.parse(responseText);
@@ -196,8 +202,6 @@ export const getSmartMealRecommendations = async ({
   mealType = 'dinner',
   userPreference = ''
 }) => {
-  const model = getModel('gemini-1.5-flash', true);
-
   const dailyTarget = userProfile.daily_calorie_target || 2000;
   const targetProtein = userProfile.target_protein_g || 120;
   const targetCarbs = userProfile.target_carbs_g || 220;
@@ -262,8 +266,7 @@ Return strictly valid JSON matching this structure:
 }
 `;
 
-  const result = await model.generateContent(prompt);
-  const responseText = result.response.text();
+  const responseText = await generateContentWithFallback([prompt], true);
 
   try {
     return JSON.parse(responseText);
@@ -278,8 +281,6 @@ Return strictly valid JSON matching this structure:
  * Evaluates 7-day intake, macronutrient consistency, and activity correlation from Google Fit.
  */
 export const generateWeeklyInsights = async ({ weeklySummary, userProfile }) => {
-  const model = getModel('gemini-1.5-flash', true);
-
   const prompt = `
 You are the chief nutrition analyst for CalorieKnows. Evaluate the user's weekly health, nutrition, and physical activity report.
 
@@ -321,8 +322,7 @@ Return strictly valid JSON:
 }
 `;
 
-  const result = await model.generateContent(prompt);
-  const responseText = result.response.text();
+  const responseText = await generateContentWithFallback([prompt], true);
 
   try {
     return JSON.parse(responseText);
