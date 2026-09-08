@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth, optionalAuth } from '../middleware/auth.js';
 import {
   scanFood,
   scanNutritionLabel,
@@ -26,17 +26,15 @@ const upload = multer({
   }
 });
 
-router.use(requireAuth);
+// Snap & Log Scanner (can scan with optional auth)
+router.post('/food', optionalAuth, upload.single('image'), scanFood);
 
-// Snap & Log Scanner (multipart "image" or JSON image_base64)
-router.post('/food', upload.single('image'), scanFood);
+// Nutrition Label Scanner (can scan with optional auth)
+router.post('/label', optionalAuth, upload.single('image'), scanNutritionLabel);
 
-// Nutrition Label Scanner (multipart "image" or JSON image_base64)
-router.post('/label', upload.single('image'), scanNutritionLabel);
-
-// Meal Logging & History
-router.post('/log-meal', logMeal);
-router.get('/meals', getMeals);
-router.delete('/meals/:id', deleteMeal);
+// Meal Logging & History (requires auth)
+router.post('/log-meal', requireAuth, logMeal);
+router.get('/meals', requireAuth, getMeals);
+router.delete('/meals/:id', requireAuth, deleteMeal);
 
 export default router;
